@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>링크 모음</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1a1d21; --sub: #6b7280;
+    --accent: #ff5a3c; --border: #e5e7eb; --badge: #f3f4f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #101216; --card: #1a1e24; --text: #f3f4f6; --sub: #9ca3af; --border: #2a2f37; --badge: #23272e; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Pretendard", "Malgun Gothic", -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  /* 롤링 고지 배너 */
+  .ticker {
+    background: var(--text); color: var(--bg);
+    overflow: hidden; white-space: nowrap; font-size: 12.5px; padding: 8px 0;
+  }
+  .ticker-inner { display: inline-block; animation: roll 18s linear infinite; }
+  .ticker-inner span { padding-right: 60px; }
+  @keyframes roll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  .wrap { max-width: 560px; margin: 0 auto; padding: 32px 16px 48px; }
+  header { text-align: center; margin-bottom: 20px; }
+  .avatar {
+    width: 84px; height: 84px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 38px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;
+  }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .bio { color: var(--sub); font-size: 14px; }
+
+  .sns { display: flex; justify-content: center; gap: 14px; margin: 16px 0 4px; }
+  .sns a {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--card); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); text-decoration: none; transition: transform .12s;
+  }
+  .sns a:hover { transform: translateY(-2px); }
+  .sns svg { width: 20px; height: 20px; fill: currentColor; }
+
+  .search {
+    width: 100%; padding: 13px 18px; margin: 14px 0 18px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--card); color: var(--text); font-size: 15px; outline: none;
+  }
+  .search:focus { border-color: var(--accent); }
+
+  .link-card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
+    text-decoration: none; color: var(--text);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .link-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+  .link-card .body { flex: 1; min-width: 0; }
+  .num {
+    display: inline-block; background: var(--badge); color: var(--sub);
+    font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin-bottom: 6px;
+  }
+  .link-card .title { font-weight: 700; font-size: 16px; }
+  .link-card .note { color: var(--sub); font-size: 13px; margin-top: 3px; }
+  .link-card .cta { display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--accent); }
+  .thumb {
+    width: 92px; height: 92px; flex-shrink: 0; border-radius: 12px;
+    background: var(--badge); object-fit: cover;
+    display: flex; align-items: center; justify-content: center; font-size: 34px;
+  }
+  .empty { text-align: center; color: var(--sub); padding: 40px 0; font-size: 14px; display: none; }
+</style>
+</head>
+<body>
+<div class="ticker"><div class="ticker-inner" id="ticker"></div></div>
+<div class="wrap">
+  <header>
+    <div class="avatar">🛒</div>
+    <h1 id="name"></h1>
+    <p class="bio" id="bio"></p>
+    <nav class="sns" id="sns"></nav>
+  </header>
+  <input class="search" id="q" type="search" placeholder="품번 또는 제품명 검색 (예: 001)">
+  <main id="links"></main>
+  <p class="empty" id="empty">검색 결과가 없습니다</p>
+</div>
+<script>
+const ICONS = {
+  instagram: '<svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.3.06-1.7.07-4.9.07s-3.6-.01-4.9-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.11 15.62 2.1 15.24 2.1 12s.01-3.58.08-4.85C2.33 3.92 3.84 2.38 7.1 2.23 8.4 2.21 8.8 2.2 12 2.2zm0 3.63a6.17 6.17 0 1 0 0 12.34 6.17 6.17 0 0 0 0-12.34zm0 10.18a4 4 0 1 1 0-8.02 4 4 0 0 1 0 8.02zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>',
+  youtube: '<svg viewBox="0 0 24 24"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg>',
+  threads: '<svg viewBox="0 0 24 24"><path d="M12.2 24h-.01c-3.58-.02-6.33-1.2-8.19-3.51C2.35 18.44 1.5 15.59 1.47 12v-.01c.02-3.58.87-6.43 2.53-8.48C5.85 1.2 8.61.02 12.18 0h.02c2.74.02 5.03.72 6.82 2.1a8.98 8.98 0 0 1 2.95 4.43l-2.36.66a6.6 6.6 0 0 0-2.11-3.2c-1.34-1.04-3.13-1.57-5.31-1.58-2.9.02-5.09.93-6.51 2.7C4.32 6.77 3.62 9.16 3.6 12c.02 2.84.72 5.23 2.08 6.9 1.42 1.76 3.61 2.67 6.51 2.69 2.62-.02 4.35-.63 5.79-2.06 1.65-1.62 1.62-3.62 1.09-4.83-.31-.72-.88-1.31-1.63-1.76-.19 1.35-.62 2.45-1.28 3.27-.88 1.1-2.13 1.7-3.72 1.79-1.2.06-2.36-.22-3.26-.8a3.69 3.69 0 0 1-1.74-2.96c-.08-1.2.41-2.3 1.37-3.11.92-.77 2.22-1.22 3.75-1.31a13 13 0 0 1 2.05.03c-.1-.6-.3-1.07-.6-1.42-.42-.48-1.06-.73-1.92-.73h-.03c-.69 0-1.62.19-2.22 1.08l-1.98-1.33c1.1-1.64 2.89-2.14 4.2-2.14h.05c3 .02 4.78 1.85 4.96 5.06l.6.31c1.44.72 2.5 1.8 3.05 3.13.77 1.85.84 4.86-1.5 7.16C18.63 23.16 16.31 23.98 12.2 24zm-.9-9.83c-1.28.07-2.6.52-2.53 1.68.05.76.83 1.61 2.34 1.53 1.72-.09 2.55-1.03 2.78-3.13a11 11 0 0 0-2.59-.08z"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"/></svg>'
+};
+fetch('links.json?t=' + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('name').textContent = data.profile.name;
+    document.getElementById('bio').textContent = data.profile.bio;
+    document.title = data.profile.name;
+    const t = document.getElementById('ticker');
+    t.innerHTML = ('<span>' + data.profile.disclosure + '</span>').repeat(6);
+    const sns = document.getElementById('sns');
+    for (const [k, url] of Object.entries(data.profile.sns || {})) {
+      if (!url) continue;
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      a.setAttribute('aria-label', k); a.innerHTML = ICONS[k] || k;
+      sns.appendChild(a);
+    }
+    const main = document.getElementById('links');
+    const cards = [];
+    for (const l of data.links) {
+      const a = document.createElement('a');
+      a.className = 'link-card';
+      a.href = l.url; a.target = '_blank'; a.rel = 'noopener sponsored';
+      const thumb = l.thumb
+        ? '<img class="thumb" src="' + l.thumb + '" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=thumb>🛍️</div>\'">'
+        : '<div class="thumb">🛍️</div>';
+      a.innerHTML = '<div class="body"><span class="num"></span><div class="title"></div>' +
+                    (l.note ? '<div class="note"></div>' : '') +
+                    '<span class="cta">최저가 보러가기 →</span></div>' + thumb;
+      a.querySelector('.num').textContent = l.num || '';
+      a.querySelector('.title').textContent = l.title;
+      if (l.note) a.querySelector('.note').textContent = l.note;
+      a.dataset.key = ((l.num || '') + ' ' + l.title + ' ' + (l.note || '')).toLowerCase();
+      main.appendChild(a);
+      cards.push(a);
+    }
+    document.getElementById('q').addEventListener('input', e => {
+      const q = e.target.value.trim().toLowerCase();
+      let visible = 0;
+      for (const c of cards) {
+        const show = !q || c.dataset.key.includes(q);
+        c.style.display = show ? '' : 'none';
+        if (show) visible++;
+      }
+      document.getElementById('empty').style.display = visible ? 'none' : 'block';
+    });
+  });
+</script>
+</body>
+</html>
